@@ -1,0 +1,1104 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Web Thực Hành Git &amp; GitHub — Bản tĩnh cho GitHub Pages</title>
+    <style>
+      :root {
+        --bg: #f4f6f8;
+        --surface: #ffffff;
+        --surface-2: #eef2f6;
+        --ink: #16283c;
+        --muted: #5b6d80;
+        --navy: #0e2c4e;
+        --navy-ink: #ffffff;
+        --accent: #e85d04;
+        --accent-soft: #fdeee1;
+        --ok: #177245;
+        --ok-soft: #e2f3e9;
+        --bad: #bf2f2f;
+        --bad-soft: #fbe7e7;
+        --warn: #9a6a00;
+        --warn-soft: #fdf3d3;
+        --line: #d9e1e9;
+        --term-bg: #0c1c2c;
+        --term-ink: #dcebf8;
+        --term-dim: #7e9ab2;
+        --shadow: 0 1px 3px rgba(14, 44, 78, .08);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0a141f;
+          --surface: #12222f;
+          --surface-2: #182c3d;
+          --ink: #e4edf5;
+          --muted: #9db1c4;
+          --navy: #1d4266;
+          --accent: #f07f22;
+          --accent-soft: #3a2712;
+          --ok: #4cc084;
+          --ok-soft: #123325;
+          --bad: #f08a8a;
+          --bad-soft: #3a1a1a;
+          --warn: #e8c35a;
+          --warn-soft: #38300f;
+          --line: #27435c;
+          --shadow: 0 1px 3px rgba(0, 0, 0, .4);
+        }
+      }
+      * { box-sizing: border-box; }
+      html { -webkit-text-size-adjust: 100%; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+        font-size: 16px;
+        line-height: 1.55;
+      }
+      button, select, input, textarea { font: inherit; color: inherit; }
+      button, select, summary { min-height: 40px; }
+      .wrap { max-width: 1060px; margin: 0 auto; padding: 0 16px 64px; }
+
+      /* ---------- Header stats ---------- */
+      .statsbar {
+        background: var(--navy);
+        color: var(--navy-ink);
+        margin: 0 -16px;
+        padding: 18px 16px 16px;
+      }
+      .statsbar h1 { font-size: 22px; line-height: 1.25; margin: 0 0 4px; font-weight: 700; }
+      .statsbar .sub { margin: 0 0 14px; font-size: 14px; opacity: .85; }
+      .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+      .chip {
+        background: rgba(255,255,255,.12);
+        border: 1px solid rgba(255,255,255,.25);
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: 14px;
+        min-height: 36px;
+        display: inline-flex; align-items: center; gap: 6px;
+      }
+      .chip b { font-size: 16px; }
+      .chip button {
+        background: none; border: none; color: inherit; cursor: pointer;
+        padding: 0; min-height: 0; font: inherit; display: inline-flex; align-items: center; gap: 6px;
+      }
+
+      /* ---------- Tabs ---------- */
+      nav.tabs {
+        display: flex; flex-wrap: wrap; gap: 8px;
+        padding: 14px 0 6px;
+        position: sticky; top: 0; z-index: 20;
+        background: var(--bg);
+      }
+      nav.tabs button {
+        border: 1px solid var(--line);
+        background: var(--surface);
+        border-radius: 999px;
+        padding: 8px 18px;
+        cursor: pointer;
+        font-weight: 600;
+        box-shadow: var(--shadow);
+      }
+      nav.tabs button[aria-selected="true"] {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff;
+      }
+      section.tab { display: none; padding-top: 10px; }
+      section.tab.active { display: block; }
+      h2.sec { font-size: 20px; margin: 18px 0 10px; }
+      h3.sec { font-size: 17px; margin: 20px 0 8px; }
+      p.lead { color: var(--muted); margin: 4px 0 14px; }
+
+      /* ---------- Cards & progress ---------- */
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 16px;
+        box-shadow: var(--shadow);
+        margin-bottom: 14px;
+      }
+      .bar { height: 10px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+      .bar > i { display: block; height: 100%; background: var(--accent); border-radius: 999px; transition: width .3s ease; }
+      .bar.ok > i { background: var(--ok); }
+      .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+      @media (max-width: 720px) { .grid3 { grid-template-columns: 1fr; } }
+      .statcard { text-align: left; cursor: pointer; width: 100%; }
+      .statcard .num { font-size: 30px; font-weight: 700; line-height: 1.1; color: var(--navy); }
+      @media (prefers-color-scheme: dark) { .statcard .num { color: var(--ink); } }
+      .statcard .lbl { color: var(--muted); font-size: 14px; margin-top: 2px; }
+      .partrow { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--line); }
+      .partrow:last-child { border-bottom: none; }
+      .partrow .bar { grid-column: 1 / -1; }
+      .partrow .cnt { color: var(--muted); font-size: 14px; white-space: nowrap; }
+      .nextcard { border-left: 6px solid var(--accent); }
+      .nextcard .t { font-size: 18px; font-weight: 700; margin: 2px 0 4px; }
+      .nextcard .g { color: var(--muted); margin: 0 0 12px; }
+
+      /* ---------- Buttons ---------- */
+      .btn {
+        border: 1px solid var(--line);
+        background: var(--surface);
+        border-radius: 10px;
+        padding: 8px 16px;
+        cursor: pointer;
+        font-weight: 600;
+        display: inline-flex; align-items: center; gap: 8px;
+      }
+      .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+      .btn.navy { background: var(--navy); border-color: var(--navy); color: #fff; }
+      .btn.danger { color: var(--bad); border-color: var(--bad); }
+      .btn.small { min-height: 36px; padding: 5px 12px; font-size: 14px; }
+      .btn:disabled { opacity: .5; cursor: default; }
+      .btnrow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+      select.count {
+        border: 1px solid var(--line); background: var(--surface);
+        border-radius: 10px; padding: 8px 10px; font-weight: 600;
+      }
+      input.search {
+        width: 100%; border: 1px solid var(--line); background: var(--surface);
+        border-radius: 10px; padding: 10px 14px; min-height: 44px;
+      }
+      textarea.note {
+        width: 100%; border: 1px solid var(--line); background: var(--surface);
+        border-radius: 10px; padding: 10px 12px; min-height: 64px; resize: vertical;
+      }
+
+      /* ---------- Exercises ---------- */
+      .exhead {
+        width: 100%; text-align: left; background: none; border: none; cursor: pointer;
+        display: flex; gap: 10px; align-items: flex-start; padding: 2px 0; min-height: 44px;
+      }
+      .exhead .ttl { font-weight: 700; font-size: 16.5px; flex: 1; }
+      .exhead .chev { color: var(--muted); font-size: 14px; padding-top: 3px; }
+      .pill { border-radius: 999px; padding: 2px 10px; font-size: 12.5px; font-weight: 700; white-space: nowrap; }
+      .pill.todo { background: var(--surface-2); color: var(--muted); }
+      .pill.doing { background: var(--warn-soft); color: var(--warn); }
+      .pill.done { background: var(--ok-soft); color: var(--ok); }
+      .exbody { display: none; padding-top: 8px; }
+      .exbody.open { display: block; }
+      .exbody .goal { margin: 4px 0 10px; }
+      .lbl2 { font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin: 14px 0 6px; }
+      ul.tight { margin: 6px 0; padding-left: 22px; }
+      ul.tight li { margin: 4px 0; }
+      ol.steps { list-style: none; margin: 6px 0; padding: 0; counter-reset: st; }
+      ol.steps li { margin: 6px 0; }
+      .stepbtn {
+        width: 100%; text-align: left; display: flex; gap: 10px; align-items: flex-start;
+        background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px;
+        padding: 9px 12px; cursor: pointer; min-height: 44px;
+      }
+      .stepbtn .box {
+        flex: none; width: 22px; height: 22px; border-radius: 6px; margin-top: 1px;
+        border: 2px solid var(--muted); display: inline-flex; align-items: center; justify-content: center;
+        color: #fff; font-size: 14px; font-weight: 700;
+      }
+      .stepbtn[aria-pressed="true"] .box { background: var(--ok); border-color: var(--ok); }
+      .stepbtn[aria-pressed="true"] .stxt { color: var(--muted); }
+      .stepbtn .stxt { flex: 1; overflow-wrap: anywhere; }
+      code.cmd, .cmdblock {
+        font-family: ui-monospace, "Cascadia Code", Consolas, Menlo, monospace;
+        font-size: 13.5px;
+      }
+      code.cmd {
+        background: var(--term-bg); color: var(--term-ink);
+        border-radius: 6px; padding: 2px 7px; overflow-wrap: anywhere;
+      }
+      .cmdblock {
+        background: var(--term-bg); color: var(--term-ink);
+        border-radius: 10px; padding: 12px 14px; margin: 8px 0;
+        white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.6;
+      }
+      .checkline { background: var(--ok-soft); border-radius: 10px; padding: 10px 14px; margin-top: 10px; }
+      .hintbox { background: var(--accent-soft); border-radius: 10px; padding: 10px 14px; margin-top: 10px; display: none; }
+      .hintbox.open { display: block; }
+      .statusrow { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+      .statusrow button { border-radius: 999px; border: 1px solid var(--line); background: var(--surface); padding: 6px 14px; cursor: pointer; font-weight: 600; min-height: 38px; }
+      .statusrow button[aria-pressed="true"] { background: var(--navy); color: #fff; border-color: var(--navy); }
+      .grouptitle { font-size: 17px; font-weight: 700; margin: 22px 0 10px; color: var(--navy); }
+      @media (prefers-color-scheme: dark) { .grouptitle { color: var(--ink); } }
+
+      /* ---------- Drill / quiz ---------- */
+      .term {
+        background: var(--term-bg); color: var(--term-ink);
+        border-radius: 14px; padding: 18px; margin-bottom: 14px;
+      }
+      .term .who { color: var(--term-dim); font-family: ui-monospace, Consolas, monospace; font-size: 13px; margin-bottom: 8px; }
+      .term .scen { font-size: 17px; margin: 0 0 14px; }
+      .term .inrow { display: flex; gap: 8px; align-items: stretch; }
+      .term .prompt { font-family: ui-monospace, Consolas, monospace; color: #7ee2a0; padding-top: 10px; font-weight: 700; }
+      .term input {
+        flex: 1; min-width: 0; background: rgba(255,255,255,.06); color: var(--term-ink);
+        border: 1px solid rgba(255,255,255,.25); border-radius: 8px; padding: 10px 12px;
+        font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 15px; min-height: 44px;
+      }
+      .term .feedback { margin-top: 12px; display: none; border-radius: 10px; padding: 10px 14px; }
+      .term .feedback.show { display: block; }
+      .term .feedback.good { background: rgba(46, 160, 90, .22); }
+      .term .feedback.wrong { background: rgba(200, 60, 60, .25); }
+      .term .feedback code { background: rgba(0,0,0,.35); padding: 1px 6px; border-radius: 5px; font-family: ui-monospace, Consolas, monospace; overflow-wrap: anywhere; }
+      .scorebar { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; margin-bottom: 12px; font-weight: 600; }
+      .optlist { display: grid; gap: 10px; margin-top: 12px; }
+      .optbtn {
+        text-align: left; border: 1px solid var(--line); background: var(--surface);
+        border-radius: 12px; padding: 12px 16px; cursor: pointer; min-height: 48px; width: 100%;
+      }
+      .optbtn:disabled { cursor: default; opacity: 1; }
+      .optbtn.right { border-color: var(--ok); background: var(--ok-soft); font-weight: 700; }
+      .optbtn.wrong { border-color: var(--bad); background: var(--bad-soft); }
+      .explain { display: none; margin-top: 12px; background: var(--surface-2); border-radius: 10px; padding: 10px 14px; }
+      .explain.show { display: block; }
+      table.hist { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+      table.hist th, table.hist td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--line); }
+      table.hist th { color: var(--muted); font-size: 13px; }
+      .misslist { margin: 6px 0; padding-left: 20px; }
+      .misslist li { margin: 5px 0; }
+      .empty { color: var(--muted); padding: 8px 0; }
+
+      /* ---------- Deploy guide ---------- */
+      .copyrow { display: flex; gap: 8px; align-items: flex-start; }
+      .copyrow .cmdblock { flex: 1; margin: 0; }
+      .copyrow .btn { flex: none; }
+      table.dns { width: 100%; border-collapse: collapse; font-size: 15px; margin: 8px 0; }
+      table.dns th, table.dns td { text-align: left; padding: 8px 10px; border: 1px solid var(--line); }
+      table.dns th { background: var(--surface-2); }
+      table.dns td code { font-family: ui-monospace, Consolas, monospace; font-size: 13.5px; overflow-wrap: anywhere; }
+      ul.checklist { list-style: none; margin: 8px 0; padding: 0; }
+      ul.checklist li { padding: 8px 0 8px 34px; position: relative; border-bottom: 1px solid var(--line); }
+      ul.checklist li:last-child { border-bottom: none; }
+      ul.checklist li::before {
+        content: ""; position: absolute; left: 2px; top: 10px; width: 18px; height: 18px;
+        border: 2px solid var(--muted); border-radius: 5px;
+      }
+      .notebox { background: var(--warn-soft); border-radius: 10px; padding: 12px 16px; margin: 12px 0; }
+      .okbox { background: var(--ok-soft); border-radius: 10px; padding: 12px 16px; margin: 12px 0; }
+      .muted { color: var(--muted); }
+      .small { font-size: 14px; }
+      .mt { margin-top: 14px; }
+      .hidden { display: none !important; }
+      @media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="statsbar">
+        <h1>Thực hành Git &amp; GitHub</h1>
+        <p class="sub">1000 mục từ Cẩm nang Git &amp; GitHub: 100 bài tập · 300 luyện lệnh · 600 trắc nghiệm. Ngân hàng câu hỏi lưu trong file JSON riêng <b>assets/practice-data.json</b> — muốn thêm/sửa câu chỉ cần sửa file đó. Tiến độ lưu trên trình duyệt này (localStorage).</p>
+        <div class="chips" id="chips"></div>
+      </header>
+
+      <nav class="tabs" role="tablist" aria-label="Phần chính">
+        <button role="tab" data-tab="dashboard" aria-selected="true">Dashboard</button>
+        <button role="tab" data-tab="exercises" aria-selected="false">Bài tập</button>
+        <button role="tab" data-tab="drills" aria-selected="false">Luyện lệnh</button>
+        <button role="tab" data-tab="quiz" aria-selected="false">Trắc nghiệm</button>
+        <button role="tab" data-tab="deploy" aria-selected="false">Triển khai Pages</button>
+      </nav>
+
+      <section class="tab active" id="tab-dashboard" role="tabpanel"><div class="card"><p class="empty" id="bank-loading">Đang tải ngân hàng câu hỏi từ assets/practice-data.json…</p></div></section>
+      <section class="tab" id="tab-exercises" role="tabpanel"><div class="card"><p class="empty">Đang tải ngân hàng câu hỏi…</p></div></section>
+      <section class="tab" id="tab-drills" role="tabpanel"><div class="card"><p class="empty">Đang tải ngân hàng câu hỏi…</p></div></section>
+      <section class="tab" id="tab-quiz" role="tabpanel"><div class="card"><p class="empty">Đang tải ngân hàng câu hỏi…</p></div></section>
+      <section class="tab" id="tab-deploy" role="tabpanel"></section>
+    </div>
+
+    <script>
+      "use strict";
+      /* ---------- Ngân hàng câu hỏi: nạp từ file JSON riêng ---------- */
+      /* Toàn bộ câu hỏi nằm trong assets/practice-data.json (100 bài tập + 300 luyện lệnh + 600 trắc nghiệm = 1000 mục).
+         Muốn thêm / sửa / bớt câu: chỉ sửa file JSON đó, không cần đụng vào code. */
+      var DATA = null;
+      var GROUPS = [];
+      var EXERCISES = []; // {groupIdx, item}
+      var DRILLS = [];
+      var QUIZ = [];
+      function buildBank(data) {
+        DATA = data;
+        GROUPS = [];
+        DATA.exercises.forEach(function (g) { GROUPS.push({ part: g.part, appendix: false, items: g.items }); });
+        DATA.appendix.forEach(function (g) { GROUPS.push({ part: g.part, appendix: true, items: g.items }); });
+        EXERCISES = [];
+        GROUPS.forEach(function (g, gi) { g.items.forEach(function (it) { EXERCISES.push({ group: gi, item: it }); }); });
+        DRILLS = DATA.drills;
+        QUIZ = DATA.quiz;
+      }
+      function loadBank() {
+        fetch("assets/practice-data.json", { cache: "no-cache" })
+          .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+          .then(function (data) {
+            if (!data || !Array.isArray(data.exercises) || !Array.isArray(data.appendix) || !Array.isArray(data.drills) || !Array.isArray(data.quiz)) throw new Error("JSON sai cấu trúc");
+            buildBank(data);
+            renderAll();
+          })
+          .catch(function () { showLoadError(); });
+      }
+      function showLoadError() {
+        el("tab-dashboard").innerHTML =
+          '<div class="card"><h3 class="sec" style="margin-top:0">Chưa tải được ngân hàng câu hỏi</h3>' +
+          '<p class="lead">Trang cần file <b>assets/practice-data.json</b> nằm cạnh index.html (cùng cấu trúc thư mục như trong repo). Kiểm tra lại vị trí file rồi thử lại.</p>' +
+          '<div class="btnrow"><button class="btn primary" id="btn-retry-bank">Thử tải lại</button></div></div>';
+        var b = el("btn-retry-bank");
+        if (b) b.addEventListener("click", loadBank);
+      }
+
+      /* ---------- State (localStorage) ---------- */
+      var LS_KEY = "git-github-practice-static-v1";
+      var state = loadState();
+      function blankState() {
+        return {
+          exercises: {},           // idx -> {status, steps:[bool], note}
+          drills: {},              // idx -> {attempts, correct}
+          quizAttempts: [],        // {score, total, date}
+          settings: { exBatchSize: 5, drillCount: 10, quizCount: 10 },
+          batch: null,             // {ids:[idx]}
+          exView: "batch"
+        };
+      }
+      function loadState() {
+        try {
+          var raw = localStorage.getItem(LS_KEY);
+          if (!raw) return blankState();
+          var s = JSON.parse(raw);
+          var b = blankState();
+          b.exercises = s.exercises || {};
+          b.drills = s.drills || {};
+          b.quizAttempts = Array.isArray(s.quizAttempts) ? s.quizAttempts : [];
+          if (s.settings) { for (var k in b.settings) if (s.settings[k] != null) b.settings[k] = s.settings[k]; }
+          b.batch = s.batch || null;
+          b.exView = s.exView === "all" ? "all" : "batch";
+          return b;
+        } catch (e) { return blankState(); }
+      }
+      var saveTimer = null;
+      function save() {
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(function () {
+          try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
+        }, 120);
+      }
+      function exState(i) {
+        if (!state.exercises[i]) state.exercises[i] = { status: "todo", steps: [], note: "" };
+        return state.exercises[i];
+      }
+      function drillState(i) {
+        if (!state.drills[i]) state.drills[i] = { attempts: 0, correct: false };
+        return state.drills[i];
+      }
+
+      /* ---------- Utils ---------- */
+      function el(id) { return document.getElementById(id); }
+      function esc(s) {
+        return String(s == null ? "" : s)
+          .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+      function shuffle(arr) { // Fisher-Yates
+        var a = arr.slice();
+        for (var i = a.length - 1; i > 0; i--) {
+          var j = Math.floor(Math.random() * (i + 1));
+          var t = a[i]; a[i] = a[j]; a[j] = t;
+        }
+        return a;
+      }
+      function sampleIndices(n, count) {
+        var all = []; for (var i = 0; i < n; i++) all.push(i);
+        if (count >= n) return shuffle(all);
+        return shuffle(all).slice(0, count);
+      }
+      function normCmd(s) {
+        return String(s || "")
+          .replace(/[\u201c\u201d]/g, '"').replace(/[\u2018\u2019]/g, "'")
+          .trim().replace(/\s+/g, " ").replace(/;$/, "").toLowerCase();
+      }
+      function fmtDate(iso) {
+        try {
+          var d = new Date(iso);
+          return d.toLocaleDateString("vi-VN") + " " + d.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
+        } catch (e) { return iso; }
+      }
+      function pct(a, b) { return b ? Math.round((a / b) * 100) : 0; }
+
+      /* ---------- Tabs ---------- */
+      var tabBtns = document.querySelectorAll("nav.tabs button");
+      function goTab(name, openExerciseIdx) {
+        tabBtns.forEach(function (b) { b.setAttribute("aria-selected", b.getAttribute("data-tab") === name ? "true" : "false"); });
+        ["dashboard", "exercises", "drills", "quiz", "deploy"].forEach(function (t) {
+          el("tab-" + t).classList.toggle("active", t === name);
+        });
+        if (name === "exercises" && openExerciseIdx != null) {
+          state.exView = "all"; save(); renderExercises();
+          var card = el("excard-" + openExerciseIdx);
+          if (card) {
+            var body = card.querySelector(".exbody");
+            if (body && !body.classList.contains("open")) toggleEx(openExerciseIdx, card);
+            card.scrollIntoView({ block: "start" });
+          }
+        }
+        window.scrollTo({ top: 0 });
+        if (name === "exercises" && openExerciseIdx == null) { /* keep position */ }
+      }
+      tabBtns.forEach(function (b) {
+        b.addEventListener("click", function () { goTab(b.getAttribute("data-tab")); });
+      });
+
+      /* ---------- Header chips ---------- */
+      function totals() {
+        var exDone = 0;
+        EXERCISES.forEach(function (_, i) { if (exState(i).status === "done") exDone++; });
+        var dTried = 0, dCorrect = 0;
+        DRILLS.forEach(function (_, i) { var d = drillState(i); if (d.attempts > 0) dTried++; if (d.correct) dCorrect++; });
+        var best = null;
+        state.quizAttempts.forEach(function (a) {
+          if (!best || a.score / a.total > best.score / best.total) best = a;
+        });
+        return { exDone: exDone, dTried: dTried, dCorrect: dCorrect, best: best };
+      }
+      function renderChips() {
+        var t = totals();
+        el("chips").innerHTML =
+          '<span class="chip">Bài tập <b>' + t.exDone + '/' + EXERCISES.length + '</b></span>' +
+          '<span class="chip">Lệnh đã đúng <b>' + t.dCorrect + '/' + DRILLS.length + '</b></span>' +
+          '<span class="chip">Trắc nghiệm cao nhất <b>' + (t.best ? t.best.score + '/' + t.best.total : "—") + '</b></span>' +
+          '<span class="chip">Ngân hàng <b>' + (EXERCISES.length + DRILLS.length + QUIZ.length) + ' mục</b></span>';
+      }
+
+      /* ---------- Dashboard ---------- */
+      function nextExercise() {
+        var i;
+        for (i = 0; i < EXERCISES.length; i++) if (exState(i).status === "doing") return i;
+        for (i = 0; i < EXERCISES.length; i++) if (exState(i).status !== "done") return i;
+        return -1;
+      }
+      function renderDashboard() {
+        var t = totals();
+        var nx = nextExercise();
+        var h = "";
+        if (nx >= 0) {
+          h += '<div class="card nextcard"><div class="lbl2" style="margin-top:0">Bài nên làm tiếp theo</div>' +
+            '<div class="t">' + esc(EXERCISES[nx].item.title) + '</div>' +
+            '<p class="g">' + esc(EXERCISES[nx].item.goal) + '</p>' +
+            '<button class="btn primary" id="dash-open-next">Mở bài này</button></div>';
+        } else {
+          h += '<div class="card nextcard"><div class="t">Đã xong cả ' + EXERCISES.length + ' bài tập</div><p class="g">Chúc mừng — toàn bộ bài tập trong cẩm nang đã hoàn thành.</p></div>';
+        }
+        h += '<div class="grid3">' +
+          '<button class="card statcard" data-goto="exercises"><div class="num">' + t.exDone + '/' + EXERCISES.length + '</div><div class="lbl">Bài tập đã xong</div></button>' +
+          '<button class="card statcard" data-goto="drills"><div class="num">' + t.dCorrect + '/' + DRILLS.length + '</div><div class="lbl">Lệnh đã làm đúng · tỉ lệ đúng ' + pct(t.dCorrect, t.dTried) + '% trên số câu đã thử</div></button>' +
+          '<button class="card statcard" data-goto="quiz"><div class="num">' + (t.best ? t.best.score + '/' + t.best.total : "—") + '</div><div class="lbl">Điểm trắc nghiệm cao nhất</div></button>' +
+          '</div>';
+
+        h += '<div class="card"><h3 class="sec" style="margin-top:0">Tiến độ từng phần</h3>';
+        GROUPS.forEach(function (g, gi) {
+          var start = 0; for (var k = 0; k < gi; k++) start += GROUPS[k].items.length;
+          var done = 0;
+          g.items.forEach(function (_, ii) { if (exState(start + ii).status === "done") done++; });
+          h += '<div class="partrow"><span>' + esc(g.part) + '</span><span class="cnt">' + done + '/' + g.items.length + ' bài</span>' +
+            '<span class="bar' + (done === g.items.length ? " ok" : "") + '"><i style="width:' + pct(done, g.items.length) + '%"></i></span></div>';
+        });
+        h += '</div>';
+
+        // Drills block
+        var dAttempts = 0;
+        DRILLS.forEach(function (_, i) { dAttempts += drillState(i).attempts; });
+        var missed = [];
+        DRILLS.forEach(function (d, i) { var s = drillState(i); if (s.attempts > 0 && !s.correct) missed.push({ i: i, d: d, s: s }); });
+        h += '<div class="card"><h3 class="sec" style="margin-top:0">Luyện lệnh</h3>' +
+          '<p class="lead">Đã thử ' + t.dTried + '/' + DRILLS.length + ' câu · đã đúng ' + t.dCorrect + ' câu · tổng ' + dAttempts + ' lần gõ.</p>';
+        if (missed.length) {
+          h += '<div class="lbl2">Đã thử nhưng chưa đúng</div><ul class="misslist">';
+          missed.slice(0, 30).forEach(function (m) { h += '<li>' + esc(m.d.scenario) + ' <span class="muted">(đã thử ' + m.s.attempts + ' lần)</span></li>'; });
+          if (missed.length > 30) h += '<li class="muted">… và ' + (missed.length - 30) + ' câu nữa.</li>';
+          h += '</ul>';
+        } else if (t.dTried > 0) {
+          h += '<p class="muted">Mọi câu đã thử đều đã đúng.</p>';
+        } else {
+          h += '<p class="muted">Chưa làm câu luyện lệnh nào.</p>';
+        }
+        h += '</div>';
+
+        // Quiz block
+        h += '<div class="card"><h3 class="sec" style="margin-top:0">Trắc nghiệm</h3>';
+        if (state.quizAttempts.length) {
+          var sum = 0; state.quizAttempts.forEach(function (a) { sum += a.score / a.total; });
+          var avg = Math.round((sum / state.quizAttempts.length) * 100);
+          var last = state.quizAttempts[state.quizAttempts.length - 1];
+          h += '<p class="lead">Điểm cao nhất <b>' + t.best.score + '/' + t.best.total + '</b> · lượt gần nhất <b>' + last.score + '/' + last.total + '</b> · tỉ lệ đúng trung bình <b>' + avg + '%</b> qua ' + state.quizAttempts.length + ' lượt.</p>';
+          h += '<table class="hist"><tr><th>Lượt</th><th>Điểm</th><th>Thời gian</th></tr>';
+          state.quizAttempts.slice(-5).reverse().forEach(function (a) {
+            h += '<tr><td>' + esc(fmtDate(a.date)) + '</td><td><b>' + a.score + '/' + a.total + '</b></td><td>' + pct(a.score, a.total) + '%</td></tr>';
+          });
+          h += '</table>';
+        } else {
+          h += '<p class="muted">Chưa có lượt trắc nghiệm nào.</p>';
+        }
+        h += '</div>';
+
+        // Data management
+        h += '<div class="card"><h3 class="sec" style="margin-top:0">Dữ liệu tiến độ</h3>' +
+          '<p class="lead">Tiến độ nằm trong localStorage của trình duyệt này, theo từng tên miền — bản trên Muse và bản trên git-github.minhtritm.id.vn không tự đồng bộ. Dùng Xuất / Nhập để mang tiến độ sang.</p>' +
+          '<div class="btnrow"><button class="btn" id="btn-export">Xuất tiến độ (JSON)</button>' +
+          '<button class="btn" id="btn-import">Nhập tiến độ</button>' +
+          '<input type="file" id="file-import" accept="application/json,.json" class="hidden" />' +
+          '<span id="reset-wrap"><button class="btn danger" id="btn-reset">Đặt lại toàn bộ tiến độ</button></span></div>' +
+          '<p class="small muted" id="data-msg"></p></div>';
+
+        el("tab-dashboard").innerHTML = h;
+        var openBtn = el("dash-open-next");
+        if (openBtn) openBtn.addEventListener("click", function () { goTab("exercises", nx); });
+        document.querySelectorAll("[data-goto]").forEach(function (b) {
+          b.addEventListener("click", function () { goTab(b.getAttribute("data-goto")); });
+        });
+        el("btn-export").addEventListener("click", exportProgress);
+        el("btn-import").addEventListener("click", function () { el("file-import").click(); });
+        el("file-import").addEventListener("change", importProgress);
+        el("btn-reset").addEventListener("click", askReset);
+      }
+      function exportProgress() {
+        var blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "tien-do-git-github.json";
+        document.body.appendChild(a); a.click();
+        setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 400);
+        el("data-msg").textContent = "Đã tải file tiến độ xuống.";
+      }
+      function importProgress(ev) {
+        var f = ev.target.files && ev.target.files[0];
+        if (!f) return;
+        var r = new FileReader();
+        r.onload = function () {
+          try {
+            var s = JSON.parse(String(r.result));
+            if (typeof s !== "object" || s === null) throw new Error("bad");
+            var b = blankState();
+            b.exercises = s.exercises || {}; b.drills = s.drills || {};
+            b.quizAttempts = Array.isArray(s.quizAttempts) ? s.quizAttempts : [];
+            if (s.settings) { for (var k in b.settings) if (s.settings[k] != null) b.settings[k] = s.settings[k]; }
+            state = b; save(); renderAll();
+            el("data-msg").textContent = "Đã nhập tiến độ từ file.";
+          } catch (e) { el("data-msg").textContent = "File không hợp lệ — không nhập được."; }
+        };
+        r.readAsText(f);
+        ev.target.value = "";
+      }
+      function askReset() {
+        el("reset-wrap").innerHTML =
+          '<span class="small" style="margin-right:8px">Xoá hết tiến độ bài tập, luyện lệnh và lịch sử trắc nghiệm?</span>' +
+          '<button class="btn danger small" id="btn-reset-yes">Xoá hết</button> ' +
+          '<button class="btn small" id="btn-reset-no">Huỷ</button>';
+        el("btn-reset-yes").addEventListener("click", function () {
+          state = blankState();
+          try { localStorage.removeItem(LS_KEY); } catch (e) {}
+          drillSession = null; quizSession = null;
+          renderAll();
+        });
+        el("btn-reset-no").addEventListener("click", renderDashboard);
+      }
+
+      /* ---------- Exercises ---------- */
+      var exSearch = "";
+      var openSet = {}; // idx -> true when expanded (session only)
+      function statusLabel(s) { return s === "done" ? "Đã xong" : s === "doing" ? "Đang làm" : "Chưa làm"; }
+      function computeBatch() {
+        var size = state.settings.exBatchSize;
+        var doing = [], todo = [];
+        EXERCISES.forEach(function (_, i) {
+          var s = exState(i).status;
+          if (s === "doing") doing.push(i); else if (s === "todo") todo.push(i);
+        });
+        var ids = doing.concat(todo).slice(0, size);
+        state.batch = { ids: ids };
+        save();
+        return ids;
+      }
+      function batchIds() {
+        if (!state.batch || !state.batch.ids.length) return computeBatch();
+        // drop finished ones only when the whole batch is done is handled by button; keep stable otherwise
+        return state.batch.ids;
+      }
+      function stepHtml(step) {
+        var pos = step.indexOf("CMD:");
+        if (pos === 0) return '<code class="cmd">' + esc(step.slice(4).trim()) + '</code>';
+        if (pos > 0) return esc(step.slice(0, pos)) + '<code class="cmd">' + esc(step.slice(pos + 4).trim()) + '</code>';
+        return esc(step);
+      }
+      function exerciseCard(i) {
+        var ex = EXERCISES[i];
+        var it = ex.item;
+        var st = exState(i);
+        var open = !!openSet[i];
+        var h = '<div class="card" id="excard-' + i + '">' +
+          '<button class="exhead" data-ex-toggle="' + i + '" aria-expanded="' + open + '">' +
+          '<span class="ttl">' + esc(it.title) + '</span>' +
+          '<span class="pill ' + st.status + '">' + statusLabel(st.status) + '</span>' +
+          '<span class="chev">' + (open ? "▾" : "▸") + '</span></button>' +
+          '<div class="exbody' + (open ? " open" : "") + '" id="exbody-' + i + '">' +
+          '<p class="goal"><b>Mục tiêu:</b> ' + esc(it.goal) + '</p>';
+        if (it.prep && it.prep.length) {
+          h += '<div class="lbl2">Chuẩn bị</div><ul class="tight">';
+          it.prep.forEach(function (p) { h += '<li>' + esc(p) + '</li>'; });
+          h += '</ul>';
+        }
+        h += '<div class="lbl2">Các bước — bấm vào từng bước để đánh dấu đã làm</div><ol class="steps">';
+        it.steps.forEach(function (s, si) {
+          var doneStep = !!st.steps[si];
+          h += '<li><button class="stepbtn" data-step="' + i + ':' + si + '" aria-pressed="' + doneStep + '">' +
+            '<span class="box">' + (doneStep ? "✓" : "") + '</span><span class="stxt">' + stepHtml(s) + '</span></button></li>';
+        });
+        h += '</ol>';
+        h += '<div class="checkline"><b>Tiêu chí kiểm tra:</b> ' + esc(it.check) + '</div>';
+        if (it.hint) {
+          h += '<div class="btnrow mt"><button class="btn small" data-hint="' + i + '">Xem gợi ý</button></div>' +
+            '<div class="hintbox" id="hint-' + i + '"><b>Gợi ý:</b> ' + esc(it.hint) + '</div>';
+        }
+        h += '<div class="statusrow" role="group" aria-label="Trạng thái bài">' +
+          ["todo", "doing", "done"].map(function (s) {
+            return '<button data-status="' + i + ':' + s + '" aria-pressed="' + (st.status === s) + '">' + statusLabel(s) + '</button>';
+          }).join("") + '</div>';
+        h += '<div class="lbl2">Ghi chú riêng</div>' +
+          '<textarea class="note" data-note="' + i + '" placeholder="Ghi chú cho bài này…">' + esc(st.note || "") + '</textarea>' +
+          '</div></div>';
+        return h;
+      }
+      function toggleEx(i, cardEl) {
+        openSet[i] = !openSet[i];
+        renderExercises();
+        var c = el("excard-" + i);
+        if (c) c.scrollIntoView({ block: "start" });
+      }
+      function renderExercises() {
+        var size = state.settings.exBatchSize;
+        var h = '<h2 class="sec">Bài tập — ' + EXERCISES.length + ' bài từ cẩm nang</h2>';
+        h += '<div class="card"><div class="btnrow">' +
+          '<span><b>Chế độ xem:</b></span>' +
+          '<button class="btn small' + (state.exView === "batch" ? " primary" : "") + '" id="exview-batch">Làm theo lượt</button>' +
+          '<button class="btn small' + (state.exView === "all" ? " primary" : "") + '" id="exview-all">Tất cả bài</button>' +
+          '<span class="muted small">· Mỗi lượt:</span>' +
+          '<select class="count" id="ex-batch-size" aria-label="Số bài mỗi lượt">' +
+          [3, 5, 10].map(function (n) { return '<option value="' + n + '"' + (size === n ? " selected" : "") + '>' + n + ' bài</option>'; }).join("") +
+          '</select></div>';
+        if (state.exView === "batch") {
+          var ids = batchIds();
+          var doneInBatch = ids.filter(function (i) { return exState(i).status === "done"; }).length;
+          h += '<p class="lead" style="margin-top:10px">Lượt này gồm ' + ids.length + ' bài chưa xong tiếp theo (ưu tiên bài đang làm dở). Đã xong ' + doneInBatch + '/' + ids.length + ' bài trong lượt.</p>' +
+            '<div class="bar' + (ids.length && doneInBatch === ids.length ? " ok" : "") + '"><i style="width:' + pct(doneInBatch, ids.length) + '%"></i></div>' +
+            '<div class="btnrow mt"><button class="btn navy" id="ex-next-batch" ' + (ids.length && doneInBatch === ids.length ? "" : "disabled") + '>Sang lượt tiếp theo</button>' +
+            '<span class="small muted">Nút này mở khi cả lượt đã xong.</span></div>';
+        } else {
+          h += '<div class="mt"><input class="search" id="ex-search" type="search" placeholder="Tìm bài theo tên, mục tiêu, lệnh…" value="' + esc(exSearch) + '" /></div>';
+        }
+        h += '</div>';
+
+        if (state.exView === "batch") {
+          var ids2 = batchIds();
+          if (!ids2.length) h += '<div class="card"><p class="empty">Không còn bài chưa xong — đã hoàn thành cả ' + EXERCISES.length + ' bài.</p></div>';
+          ids2.forEach(function (i) { h += exerciseCard(i); });
+        } else {
+          var q = exSearch.trim().toLowerCase();
+          var anyShown = false;
+          GROUPS.forEach(function (g, gi) {
+            var start = 0; for (var k = 0; k < gi; k++) start += GROUPS[k].items.length;
+            var cards = "";
+            g.items.forEach(function (it, ii) {
+              var i = start + ii;
+              if (q) {
+                var hay = (it.title + " " + it.goal + " " + it.steps.join(" ")).toLowerCase();
+                if (hay.indexOf(q) === -1) return;
+              }
+              cards += exerciseCard(i); anyShown = true;
+            });
+            if (cards) h += '<div class="grouptitle">' + esc(g.part) + '</div>' + cards;
+          });
+          if (!anyShown) h += '<div class="card"><p class="empty">Không tìm thấy bài nào khớp.</p></div>';
+        }
+        el("tab-exercises").innerHTML = h;
+
+        el("exview-batch").addEventListener("click", function () { state.exView = "batch"; save(); renderExercises(); });
+        el("exview-all").addEventListener("click", function () { state.exView = "all"; save(); renderExercises(); });
+        el("ex-batch-size").addEventListener("change", function (ev) {
+          state.settings.exBatchSize = parseInt(ev.target.value, 10);
+          state.batch = null; save(); renderExercises(); renderChips();
+        });
+        var nb = el("ex-next-batch");
+        if (nb) nb.addEventListener("click", function () { state.batch = null; computeBatch(); renderExercises(); window.scrollTo({ top: 0 }); });
+        var sb = el("ex-search");
+        if (sb) sb.addEventListener("input", function (ev) {
+          exSearch = ev.target.value;
+          var pos = ev.target.selectionStart;
+          renderExercises();
+          var n = el("ex-search"); n.focus(); try { n.setSelectionRange(pos, pos); } catch (e) {}
+        });
+        wireExerciseCards();
+      }
+      function wireExerciseCards() {
+        document.querySelectorAll("[data-ex-toggle]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            var i = parseInt(b.getAttribute("data-ex-toggle"), 10);
+            openSet[i] = !openSet[i];
+            renderExercises();
+          });
+        });
+        document.querySelectorAll("[data-step]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            var parts = b.getAttribute("data-step").split(":");
+            var i = parseInt(parts[0], 10), si = parseInt(parts[1], 10);
+            var st = exState(i);
+            st.steps[si] = !st.steps[si];
+            if (st.steps.every(function (x) { return x; }) && st.steps.length === EXERCISES[i].item.steps.length) {
+              if (st.status === "todo") st.status = "doing";
+            }
+            save(); renderExercises(); renderChips();
+            var c = el("excard-" + i); if (c) c.scrollIntoView({ block: "start" });
+          });
+        });
+        document.querySelectorAll("[data-hint]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            var box = el("hint-" + b.getAttribute("data-hint"));
+            if (box) box.classList.toggle("open");
+          });
+        });
+        document.querySelectorAll("[data-status]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            var parts = b.getAttribute("data-status").split(":");
+            exState(parseInt(parts[0], 10)).status = parts[1];
+            save(); renderExercises(); renderChips();
+          });
+        });
+        document.querySelectorAll("[data-note]").forEach(function (ta) {
+          ta.addEventListener("input", function () {
+            exState(parseInt(ta.getAttribute("data-note"), 10)).note = ta.value;
+            save();
+          });
+        });
+      }
+
+      /* ---------- Drills ---------- */
+      var drillSession = null; // {order:[idx], pos, score, answered, wasCorrect}
+      function renderDrills() {
+        var cnt = state.settings.drillCount;
+        var h = '<h2 class="sec">Luyện lệnh — ngân hàng ' + DRILLS.length + ' câu</h2>';
+        h += '<div class="card"><div class="btnrow"><span><b>Số câu mỗi lượt:</b></span>' +
+          '<select class="count" id="drill-count" aria-label="Số câu luyện lệnh mỗi lượt">' +
+          [5, 10, 15, 20].map(function (n) { return '<option value="' + n + '"' + (cnt === n ? " selected" : "") + '>' + n + ' câu</option>'; }).join("") +
+          '<option value="' + DRILLS.length + '"' + (cnt >= DRILLS.length ? " selected" : "") + '>Tất cả ' + DRILLS.length + '</option></select>' +
+          '<button class="btn primary" id="drill-start">' + (drillSession ? "Lượt mới (xáo trộn lại)" : "Bắt đầu lượt") + '</button></div>' +
+          '<p class="lead" style="margin-bottom:0">Mỗi lượt rút ngẫu nhiên không trùng từ ngân hàng. Chấm không phân biệt hoa/thường và khoảng trắng thừa.</p></div>';
+        h += '<div id="drill-area">';
+        if (drillSession) h += drillSessionHtml();
+        else {
+          var t = totals();
+          h += '<div class="card"><p class="empty">Chưa bắt đầu lượt nào. Tới nay: đã đúng ' + t.dCorrect + '/' + DRILLS.length + ' câu trong ngân hàng.</p></div>';
+        }
+        h += '</div>';
+        el("tab-drills").innerHTML = h;
+        el("drill-count").addEventListener("change", function (ev) {
+          state.settings.drillCount = parseInt(ev.target.value, 10); save();
+        });
+        el("drill-start").addEventListener("click", function () {
+          drillSession = { order: sampleIndices(DRILLS.length, state.settings.drillCount), pos: 0, score: 0, answered: false, wasCorrect: false, showHint: false };
+          renderDrills();
+          var inp = el("drill-input"); if (inp) inp.focus();
+        });
+        wireDrillSession();
+      }
+      function drillSessionHtml() {
+        var s = drillSession;
+        if (s.pos >= s.order.length) {
+          return '<div class="card"><h3 class="sec" style="margin-top:0">Kết quả lượt</h3>' +
+            '<p style="font-size:19px">Đúng <b>' + s.score + '/' + s.order.length + '</b> câu (' + pct(s.score, s.order.length) + '%).</p>' +
+            '<div class="bar ok"><i style="width:' + pct(s.score, s.order.length) + '%"></i></div>' +
+            '<div class="btnrow mt"><button class="btn primary" id="drill-again">Làm lượt mới</button>' +
+            '<button class="btn" id="drill-to-dash">Xem Dashboard</button></div></div>';
+        }
+        var idx = s.order[s.pos];
+        var d = DRILLS[idx];
+        var h = '<div class="scorebar"><span>Câu ' + (s.pos + 1) + '/' + s.order.length + '</span><span>Điểm lượt: ' + s.score + '</span>' +
+          '<span class="muted small">Câu này trong ngân hàng: ' + (drillState(idx).correct ? "đã từng đúng" : (drillState(idx).attempts ? "đã thử " + drillState(idx).attempts + " lần, chưa đúng" : "chưa thử")) + '</span></div>';
+        h += '<div class="term"><div class="who">ban@git-thuc-hanh: ~/repo</div>' +
+          '<p class="scen">' + esc(d.scenario) + '</p>' +
+          '<div class="inrow"><span class="prompt">$</span>' +
+          '<input id="drill-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="gõ lệnh git…" ' + (s.answered ? "disabled" : "") + ' />' +
+          '<button class="btn primary" id="drill-check" ' + (s.answered ? "disabled" : "") + '>Chấm</button></div>';
+        if (s.showHint && !s.answered) h += '<p class="small" style="color:var(--term-dim);margin:10px 0 0">Gợi ý: ' + esc(d.hint) + '</p>';
+        h += '<div class="feedback' + (s.answered ? " show " + (s.wasCorrect ? "good" : "wrong") : "") + '" id="drill-feedback">' + (s.answered ? drillFeedbackHtml(idx) : "") + '</div>';
+        h += '</div>';
+        h += '<div class="btnrow">' +
+          (!s.answered ? '<button class="btn" id="drill-hint">Gợi ý</button>' : "") +
+          (s.answered ? '<button class="btn primary" id="drill-next">' + (s.pos + 1 >= s.order.length ? "Xem kết quả" : "Câu tiếp theo") + '</button>' : "") +
+          '</div>';
+        return h;
+      }
+      function drillFeedbackHtml(idx) {
+        var d = DRILLS[idx];
+        var s = drillSession;
+        if (s.wasCorrect) return '<b>Đúng!</b> ' + esc(d.explain);
+        return '<b>Chưa đúng.</b> Đáp án: <code>' + esc(d.answers[0]) + '</code>' +
+          (d.answers.length > 1 ? ' <span>(cũng chấp nhận: ' + d.answers.slice(1).map(function (a) { return '<code>' + esc(a) + '</code>'; }).join(", ") + ')</span>' : "") +
+          '<br/>' + esc(d.explain);
+      }
+      function wireDrillSession() {
+        var again = el("drill-again");
+        if (again) again.addEventListener("click", function () {
+          drillSession = { order: sampleIndices(DRILLS.length, state.settings.drillCount), pos: 0, score: 0, answered: false, wasCorrect: false, showHint: false };
+          renderDrills();
+        });
+        var dash = el("drill-to-dash");
+        if (dash) dash.addEventListener("click", function () { renderDashboard(); goTab("dashboard"); });
+        var hint = el("drill-hint");
+        if (hint) hint.addEventListener("click", function () { drillSession.showHint = true; renderDrills(); var i = el("drill-input"); if (i) i.focus(); });
+        var chk = el("drill-check");
+        if (chk) chk.addEventListener("click", checkDrill);
+        var inp = el("drill-input");
+        if (inp) inp.addEventListener("keydown", function (ev) { if (ev.key === "Enter") checkDrill(); });
+        var nxt = el("drill-next");
+        if (nxt) nxt.addEventListener("click", function () {
+          drillSession.pos++; drillSession.answered = false; drillSession.wasCorrect = false; drillSession.showHint = false;
+          renderDrills();
+          var i2 = el("drill-input"); if (i2) i2.focus();
+        });
+      }
+      function checkDrill() {
+        if (!drillSession || drillSession.answered) return;
+        var inp = el("drill-input");
+        var val = normCmd(inp ? inp.value : "");
+        var idx = drillSession.order[drillSession.pos];
+        var d = DRILLS[idx];
+        var ok = d.answers.some(function (a) { return normCmd(a) === val; });
+        var ds = drillState(idx);
+        ds.attempts++;
+        if (ok) { ds.correct = true; drillSession.score++; }
+        drillSession.answered = true; drillSession.wasCorrect = ok;
+        save(); renderChips(); renderDrills();
+      }
+
+      /* ---------- Quiz ---------- */
+      var quizSession = null; // {order:[{qi, options:[..], correct}], pos, score, picked}
+      function renderQuiz() {
+        var cnt = state.settings.quizCount;
+        var h = '<h2 class="sec">Trắc nghiệm — ngân hàng ' + QUIZ.length + ' câu</h2>';
+        h += '<div class="card"><div class="btnrow"><span><b>Số câu mỗi lượt:</b></span>' +
+          '<select class="count" id="quiz-count" aria-label="Số câu trắc nghiệm mỗi lượt">' +
+          [5, 10, 15, 20].map(function (n) { return '<option value="' + n + '"' + (cnt === n ? " selected" : "") + '>' + n + ' câu</option>'; }).join("") +
+          '<option value="' + QUIZ.length + '"' + (cnt >= QUIZ.length ? " selected" : "") + '>Tất cả ' + QUIZ.length + '</option></select>' +
+          '<button class="btn primary" id="quiz-start">' + (quizSession ? "Lượt mới (xáo trộn lại)" : "Bắt đầu lượt") + '</button></div>' +
+          '<p class="lead" style="margin-bottom:0">Mỗi lượt rút ngẫu nhiên không trùng; thứ tự đáp án của từng câu cũng được xáo trộn. Chọn đáp án là biết đúng/sai ngay.</p></div>';
+        h += '<div id="quiz-area">';
+        if (quizSession) h += quizSessionHtml();
+        else if (state.quizAttempts.length) {
+          var last = state.quizAttempts[state.quizAttempts.length - 1];
+          h += '<div class="card"><p class="empty">Lượt gần nhất: <b>' + last.score + '/' + last.total + '</b> · ' + esc(fmtDate(last.date)) + '. Tổng ' + state.quizAttempts.length + ' lượt đã làm.</p></div>';
+        } else {
+          h += '<div class="card"><p class="empty">Chưa làm lượt trắc nghiệm nào.</p></div>';
+        }
+        h += '</div>';
+        el("tab-quiz").innerHTML = h;
+        el("quiz-count").addEventListener("change", function (ev) {
+          state.settings.quizCount = parseInt(ev.target.value, 10); save();
+        });
+        el("quiz-start").addEventListener("click", startQuiz);
+        wireQuizSession();
+      }
+      function startQuiz() {
+        var idxs = sampleIndices(QUIZ.length, state.settings.quizCount);
+        quizSession = {
+          order: idxs.map(function (qi) {
+            var q = QUIZ[qi];
+            var correctText = q.options[q.answer];
+            var opts = shuffle(q.options.map(function (t, oi) { return { t: t, oi: oi }; }));
+            return { qi: qi, options: opts, correctText: correctText };
+          }),
+          pos: 0, score: 0, picked: -1, finished: false
+        };
+        renderQuiz();
+      }
+      function quizSessionHtml() {
+        var s = quizSession;
+        if (s.finished) {
+          return '<div class="card"><h3 class="sec" style="margin-top:0">Kết quả lượt</h3>' +
+            '<p style="font-size:19px">Đúng <b>' + s.score + '/' + s.order.length + '</b> câu (' + pct(s.score, s.order.length) + '%). Lượt này đã được lưu vào lịch sử.</p>' +
+            '<div class="bar ok"><i style="width:' + pct(s.score, s.order.length) + '%"></i></div>' +
+            '<div class="btnrow mt"><button class="btn primary" id="quiz-again">Làm lượt mới</button>' +
+            '<button class="btn" id="quiz-to-dash">Xem Dashboard</button></div></div>';
+        }
+        var cur = s.order[s.pos];
+        var q = QUIZ[cur.qi];
+        var h = '<div class="scorebar"><span>Câu ' + (s.pos + 1) + '/' + s.order.length + '</span><span>Điểm lượt: ' + s.score + '</span></div>';
+        h += '<div class="card"><p style="font-size:17px;margin:0"><b>' + esc(q.q) + '</b></p><div class="optlist">';
+        cur.options.forEach(function (o, oi) {
+          var cls = "";
+          if (s.picked >= 0) {
+            if (o.t === cur.correctText) cls = "right";
+            else if (oi === s.picked) cls = "wrong";
+          }
+          h += '<button class="optbtn ' + cls + '" data-opt="' + oi + '" ' + (s.picked >= 0 ? "disabled" : "") + '>' + esc(o.t) + '</button>';
+        });
+        h += '</div><div class="explain' + (s.picked >= 0 ? " show" : "") + '">' +
+          (s.picked >= 0 ? '<b>' + (cur.options[s.picked].t === cur.correctText ? "Đúng. " : "Chưa đúng. ") + '</b>' + esc(q.explain) : "") + '</div>';
+        if (s.picked >= 0) {
+          h += '<div class="btnrow mt"><button class="btn primary" id="quiz-next">' + (s.pos + 1 >= s.order.length ? "Xem kết quả" : "Câu tiếp theo") + '</button></div>';
+        }
+        h += '</div>';
+        return h;
+      }
+      function wireQuizSession() {
+        var again = el("quiz-again");
+        if (again) again.addEventListener("click", startQuiz);
+        var dash = el("quiz-to-dash");
+        if (dash) dash.addEventListener("click", function () { renderDashboard(); goTab("dashboard"); });
+        document.querySelectorAll("[data-opt]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            if (!quizSession || quizSession.picked >= 0) return;
+            var oi = parseInt(b.getAttribute("data-opt"), 10);
+            quizSession.picked = oi;
+            var cur = quizSession.order[quizSession.pos];
+            if (cur.options[oi].t === cur.correctText) quizSession.score++;
+            renderQuiz();
+          });
+        });
+        var nxt = el("quiz-next");
+        if (nxt) nxt.addEventListener("click", function () {
+          quizSession.pos++; quizSession.picked = -1;
+          if (quizSession.pos >= quizSession.order.length) {
+            quizSession.finished = true;
+            state.quizAttempts.push({ score: quizSession.score, total: quizSession.order.length, date: new Date().toISOString() });
+            save(); renderChips();
+          }
+          renderQuiz();
+        });
+      }
+
+      /* ---------- Deploy guide ---------- */
+      var WORKFLOW_YML = [
+        "name: Deploy static site to GitHub Pages",
+        "",
+        "on:",
+        "  push:",
+        '    branches: ["main"]',
+        "  workflow_dispatch:",
+        "",
+        "permissions:",
+        "  contents: read",
+        "  pages: write",
+        "  id-token: write",
+        "",
+        "concurrency:",
+        '  group: "pages"',
+        "  cancel-in-progress: false",
+        "",
+        "jobs:",
+        "  deploy:",
+        "    environment:",
+        "      name: github-pages",
+        "      url: ${{ steps.deployment.outputs.page_url }}",
+        "    runs-on: ubuntu-latest",
+        "    steps:",
+        "      - name: Checkout",
+        "        uses: actions/checkout@v4",
+        "      - name: Setup Pages",
+        "        uses: actions/configure-pages@v5",
+        "      - name: Upload artifact",
+        "        uses: actions/upload-pages-artifact@v3",
+        "        with:",
+        '          path: "."',
+        "      - name: Deploy to GitHub Pages",
+        "        id: deployment",
+        "        uses: actions/deploy-pages@v4",
+        ""
+      ].join("\n");
+      var PUSH_CMDS = [
+        "git init",
+        "git add .",
+        'git commit -m "feat: ban tinh web thuc hanh Git & GitHub"',
+        "git branch -M main",
+        "git remote add origin https://github.com/MinhTriTM/git-github.git",
+        "git push -u origin main"
+      ].join("\n");
+      var REPO_TREE = [
+        "git-github/",
+        "├── index.html                  ← trang thực hành (giao diện + logic)",
+        "├── assets/",
+        "│   └── practice-data.json      ← ngân hàng 1000 câu hỏi (file JSON)",
+        "├── CNAME                       ← một dòng: git-github.minhtritm.id.vn",
+        "├── README.md                   ← mô tả ngắn (không bắt buộc)",
+        "└── .github/",
+        "    └── workflows/",
+        "        └── static.yml          ← workflow CI/CD ở mục 3"
+      ].join("\n");
+      function copyBlock(id, text, btn) {
+        function done() { var o = btn.textContent; btn.textContent = "Đã chép ✓"; setTimeout(function () { btn.textContent = o; }, 1600); }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(done, function () { fallback(); });
+        } else fallback();
+        function fallback() {
+          var ta = document.createElement("textarea");
+          ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+          document.body.appendChild(ta); ta.select();
+          try { document.execCommand("copy"); } catch (e) {}
+          ta.remove(); done();
+        }
+      }
+      function renderDeploy() {
+        var h = '<h2 class="sec">Triển khai lên GitHub Pages — git-github.minhtritm.id.vn</h2>' +
+          '<p class="lead">Trang bạn đang mở là bản tĩnh gồm 2 phần: <b>index.html</b> (giao diện + logic) và <b>assets/practice-data.json</b> (toàn bộ 1000 câu hỏi dạng JSON — sửa ngân hàng chỉ cần sửa file này). Không cần build, không cần máy chủ. Đẩy cả hai lên repo GitHub tên <b>git-github</b>, bật Pages bằng GitHub Actions, gắn tên miền phụ bằng file CNAME và một bản ghi DNS là xong. Mỗi lần push lên nhánh main, Actions tự triển khai lại.</p>';
+
+        h += '<div class="card"><h3 class="sec" style="margin-top:0">1 · Cấu trúc repo</h3>' +
+          '<div class="copyrow"><div class="cmdblock">' + esc(REPO_TREE) + '</div><button class="btn small" data-copy="tree">Chép</button></div>' +
+          '<p class="small muted">Repo đặt ở tài khoản MinhTriTM, tên repo: <b>git-github</b>, để chế độ Public (Pages trên gói miễn phí cần repo public).</p></div>';
+
+        h += '<div class="card"><h3 class="sec" style="margin-top:0">2 · File CNAME</h3>' +
+          '<p>Tạo file tên <b>CNAME</b> (không có phần mở rộng) ở thư mục gốc của repo, nội dung đúng một dòng:</p>' +
+          '<div class="copyrow"><div class="cmdblock">git-github.minhtritm.id.vn</div><button class="btn small" data-copy="cname">Chép</button></div>' +
+          '<p class="small muted">Đây là cách GitHub Pages biết repo này phục vụ tên miền phụ đó. Tên miền phụ riêng của repo dự án không xung đột với tên miền davucinst.me đang gắn ở repo MinhTriTM.github.io.</p></div>';
+
+        h += '<div class="card"><h3 class="sec" style="margin-top:0">3 · CI/CD bằng GitHub Actions</h3>' +
+          '<p>Tạo file <b>.github/workflows/static.yml</b> với nội dung dưới đây, rồi vào <b>Settings → Pages → Build and deployment → Source: GitHub Actions</b>. Từ đó mỗi push lên main sẽ tự deploy; cũng có thể chạy tay ở tab Actions (workflow_dispatch).</p>' +
+          '<div class="copyrow"><div class="cmdblock">' + esc(WORKFLOW_YML) + '</div><button class="btn small" data-copy="yml">Chép</button></div></div>';
+
+        h += '<div class="card"><h3 class="sec" style="margin-top:0">4 · Đẩy code lên repo</h3>' +
+          '<div class="copyrow"><div class="cmdblock">' + esc(PUSH_CMDS) + '</div><button class="btn small" data-copy="push">Chép</button></div></div>';
+
+        h += '<div class="card"><h3 class="sec" style="margin-top:0">5 · Bản ghi DNS</h3>' +
+          '<p>Thêm một bản ghi tại nơi quản lý DNS của minhtritm.id.vn:</p>' +
+          '<table class="dns"><tr><th>Loại</th><th>Tên (Host)</th><th>Trỏ tới (Target)</th><th>Ghi chú</th></tr>' +
+          '<tr><td><b>CNAME</b></td><td><code>git-github</code></td><td><code>MinhTriTM.github.io</code></td><td>Nếu DNS ở Cloudflare: để <b>DNS only</b> (tắt đám mây cam) cho tới khi GitHub cấp xong chứng chỉ HTTPS.</td></tr></table>' +
+          '<div class="notebox"><b>Lưu ý:</b> tên miền gốc minhtritm.id.vn đang chạy qua Cloudflare Tunnel về server nhà — bản ghi này là một tên miền phụ độc lập, không đụng tới tunnel hay trang /hackathon. Sau khi DNS có hiệu lực, GitHub tự cấp chứng chỉ; vào Settings → Pages và bật <b>Enforce HTTPS</b>.</div></div>';
+
+        h += '<div class="card"><h3 class="sec" style="margin-top:0">6 · Trình tự kiểm tra</h3><ul class="checklist">' +
+          '<li>Tạo repo public <b>MinhTriTM/git-github</b>.</li>' +
+          '<li>Đẩy đủ index.html, assets/practice-data.json, CNAME và .github/workflows/static.yml lên nhánh main.</li>' +
+          '<li>Settings → Pages: Source chọn <b>GitHub Actions</b>; chờ workflow chạy xanh ở tab Actions.</li>' +
+          '<li>Thêm bản ghi CNAME <b>git-github → MinhTriTM.github.io</b> ở DNS.</li>' +
+          '<li>Chờ DNS lan truyền và chứng chỉ HTTPS được cấp (thường vài phút tới vài giờ), bật Enforce HTTPS.</li>' +
+          '<li>Mở <b>https://git-github.minhtritm.id.vn</b> và làm thử một lượt luyện lệnh để chắc chắn trang chạy.</li>' +
+          '</ul>' +
+          '<div class="okbox"><b>Về tiến độ học:</b> trang này lưu tiến độ bằng localStorage theo từng tên miền. Tiến độ đã làm trên bản Muse không tự sang tên miền mới — dùng nút <b>Xuất tiến độ</b> ở Dashboard bên này rồi <b>Nhập tiến độ</b> ở Dashboard bên kia.</div></div>';
+
+        el("tab-deploy").innerHTML = h;
+        document.querySelectorAll("[data-copy]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            var k = b.getAttribute("data-copy");
+            var text = k === "tree" ? REPO_TREE : k === "cname" ? "git-github.minhtritm.id.vn" : k === "yml" ? WORKFLOW_YML : PUSH_CMDS;
+            copyBlock(k, text, b);
+          });
+        });
+      }
+
+      /* ---------- Init ---------- */
+      function renderAll() {
+        renderChips();
+        renderDashboard();
+        renderExercises();
+        renderDrills();
+        renderQuiz();
+        renderDeploy();
+      }
+      loadBank();
+    </script>
+  </body>
+</html>
